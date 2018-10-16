@@ -288,6 +288,12 @@ class Person:
             cur.execute("INSERT INTO person (born, died, name) VALUES (?, ?, ?)", (self.born, self.died, self.name))
             return cur.lastrowid
         else:
+            if self.born is not None:
+                cur.execute("UPDATE person SET born = ?", (self.born,))
+                return data[0]
+            if self.died is not None:
+                cur.execute("UPDATE person SET died = ?", (self.died,))
+            
             return data[0]
 
 def parse(data, regex):
