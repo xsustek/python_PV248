@@ -10,7 +10,7 @@ output = sys.argv[2]
 os.remove(output)
 con = sqlite3.connect(output)
 cur = con.cursor()
-cur.executescript(open("03-sql/scorelib.sql").read())
+cur.executescript(open("scorelib.sql").read())
 
 
 prints = load(input)
