@@ -22,8 +22,22 @@ class Print:
             g = m.group(1)
             if "yes" in g :
                 return True
-            else:
-                return False
+        else:
+            return False
+
+    def save(self, connection):
+        ed_id = self.edition.save(connection)
+        self.save_print(connection, ed_id)
+
+    def save_print(self, connection, ed_id):
+        cur = connection.cursor()
+        cur.execute("Select * FROM print where id = ?", (self.print_id,))
+        data = cur.fetchone()
+        if data is None:
+            cur.execute("INSERT INTO print (id, partiture, edition) VALUES (?, ?, ?)", (self.print_id, "Y" if self.partiture else "N", ed_id))
+            return cur.lastrowid
+        else:
+            return data[0]
 
     def format(self):
         print("Print Number:", self.print_id)
@@ -76,6 +90,41 @@ class Edition:
     def load_name(self, data):
         return parse(data, r"Edition: (.*)")
 
+    def save(self, connection):
+        com_id = self.composition.save(connection)
+        ed_id = self.save_edition(connection, com_id)
+        self.save_authors(connection, ed_id)
+        return ed_id
+
+    def save_authors(self, connection, ed_id):
+        if self.authors is None:
+            return
+        for a in self.authors:
+            aut_id = a.save(connection)
+            self.save_edition_author(connection, ed_id, aut_id)
+
+
+    def save_edition(self, connection, com_id):
+        cur = connection.cursor()
+        cur.execute("Select * FROM edition where name = ?", (self.name,))
+        data = cur.fetchone()
+        if data is None:
+            cur.execute("INSERT INTO edition (name, score) VALUES (?, ?)", (self.name, com_id))
+            return cur.lastrowid
+        else:
+            return data[0]
+
+    def save_edition_author(self, connection, edition_id, author_id):
+        cur = connection.cursor()
+        cur.execute("Select * FROM edition_author where edition = ? AND editor = ?", (edition_id, author_id))
+        data = cur.fetchone()
+        if data is None:
+            cur.execute("INSERT INTO edition_author (edition, editor) VALUES (?, ?)", (edition_id, author_id))
+            return cur.lastrowid
+        else:
+            return data[0]
+
+
 
 class Composition:
     def __init__(self, data):
@@ -103,7 +152,7 @@ class Composition:
         return parse(data, r"Composition Year: (.*)")
 
     def load_voices(self, data):
-        groups = re.findall(r"Voice [0-9]+: (.*)", data)
+        groups = re.findall(r"Voice ([0-9]+): (.*)", data)
         return list(map(lambda v: Voice(v), groups))
 
     def load_authors(self, data):
@@ -113,11 +162,53 @@ class Composition:
             if m is not None:
                 return list(map(lambda v: Person(v), m.split(";")))
 
+    def save(self, connection):
+        com_id = self.save_composition(connection)
+        self.save_authors(connection, com_id)
+        self.save_voices(connection, com_id)
+        return com_id
+
+
+    def save_authors(self, connection, com_id):
+        for a in self.authors:
+            aut_id = a.save(connection)
+            self.save_score_author(connection, com_id, aut_id)
+
+    def save_voices(self, connection, com_id):
+        for v in self.voices:
+            v.save(connection, com_id)
+
+    def save_composition(self, connection):
+        cur = connection.cursor()
+        cur.execute("Select * FROM score where name = ?", (self.name,))
+        data = cur.fetchone()
+        if data is None:
+            cur.execute("INSERT INTO score (name, genre, key, incipit, year) VALUES (?, ?, ?, ?, ?)", (self.name, self.genre, self.key, self.incipit, self.year))
+            return cur.lastrowid
+        else:
+            return data[0]
+
+    def save_score_author(self, connection, composition_id, author_id):
+        cur = connection.cursor()
+        cur.execute("Select * FROM score_author where score = ? AND composer = ?", (composition_id, author_id))
+        data = cur.fetchone()
+        if data is None:
+            cur.execute("INSERT INTO score_author (score, composer) VALUES (?, ?)", (composition_id, author_id))
+            return cur.lastrowid
+        else:
+            return data[0]
+
+
 
 class Voice:
     def __init__(self, data):
-        self.name = self.load_name(data)
-        self.range = self.load_range(data)
+        self.name = self.load_name(data[1])
+        self.range = self.load_range(data[1])
+        self.number = self.load_number(data[0])
+
+    def load_number(self, data):
+        return int(data)
+
 
     def load_name(self, data):
         if "--" in data:
@@ -135,6 +226,16 @@ class Voice:
         if self.range is not None:
             return str(self.range) + ", " + str(self.name)
         return str(self.name)
+
+    def save(self, connection, com_id):
+        cur = connection.cursor()
+        cur.execute("Select * FROM voice where number = ? AND score = ? AND range = ? AND name = ?", (self.number, com_id, self.range, self.name))
+        data = cur.fetchone()
+        if data is None:
+            cur.execute("INSERT INTO voice (number, score, range, name) VALUES (?, ?, ?, ?)", (self.number, com_id, self.range, self.name))
+            return cur.lastrowid
+        else:
+            return data[0]
 
 
 class Person:
@@ -179,6 +280,15 @@ class Person:
             res += str(self.died)
         return res
 
+    def save(self, connection):
+        cur = connection.cursor()
+        cur.execute("Select * FROM person where name = ?", (self.name,))
+        data = cur.fetchone()
+        if data is None:
+            cur.execute("INSERT INTO person (born, died, name) VALUES (?, ?, ?)", (self.born, self.died, self.name))
+            return cur.lastrowid
+        else:
+            return data[0]
 
 def parse(data, regex):
     m = re.search(regex, data)
