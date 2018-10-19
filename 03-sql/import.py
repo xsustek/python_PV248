@@ -11,7 +11,7 @@ if os.path.isfile(output):
     os.remove(output)
 
 
-con = sqlite3.connect(output)
+con = sqlite3.connect(str(output))
 cur = con.cursor()
 cur.executescript(open("scorelib.sql").read())
 
