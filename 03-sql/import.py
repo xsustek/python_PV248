@@ -3,12 +3,11 @@ import sys
 
 import os   
 from scorelib import load
-from pathlib import Path
 
 input = sys.argv[1]
-output = Path(str(sys.argv[2]))
+output = sys.argv[2]
 
-if output.is_file:
+if os.path.isfile(output):
     os.remove(output)
 
 
