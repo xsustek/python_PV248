@@ -3,11 +3,15 @@ import sys
 
 import os   
 from scorelib import load
+from pathlib import Path
 
 input = sys.argv[1]
-output = sys.argv[2]
+output = Path(str(sys.argv[2]))
 
-os.remove(output)
+if output.is_file:
+    os.remove(output)
+
+
 con = sqlite3.connect(output)
 cur = con.cursor()
 cur.executescript(open("scorelib.sql").read())
