@@ -106,7 +106,7 @@ class Edition:
 
     def save_edition(self, connection, com_id):
         cur = connection.cursor()
-        cur.execute("Select * FROM edition where name = ?", (self.name,))
+        cur.execute("Select * FROM edition where name = ? and score = ?", (self.name,com_id))
         data = cur.fetchone()
         if data is None:
             cur.execute("INSERT INTO edition (name, score) VALUES (?, ?)", (self.name, com_id))
@@ -115,6 +115,8 @@ class Edition:
             return data[0]
 
     def save_edition_author(self, connection, edition_id, author_id):
+        if author_id is None:
+            return
         cur = connection.cursor()
         cur.execute("Select * FROM edition_author where edition = ? AND editor = ?", (edition_id, author_id))
         data = cur.fetchone()
@@ -189,6 +191,8 @@ class Composition:
             return data[0]
 
     def save_score_author(self, connection, composition_id, author_id):
+        if author_id is None:
+            return
         cur = connection.cursor()
         cur.execute("Select * FROM score_author where score = ? AND composer = ?", (composition_id, author_id))
         data = cur.fetchone()
@@ -281,6 +285,8 @@ class Person:
         return res
 
     def save(self, connection):
+        if not self.name:
+            return
         cur = connection.cursor()
         cur.execute("Select * FROM person where name = ?", (self.name,))
         data = cur.fetchone()
@@ -289,10 +295,9 @@ class Person:
             return cur.lastrowid
         else:
             if self.born is not None:
-                cur.execute("UPDATE person SET born = ?", (self.born,))
-                return data[0]
+                cur.execute("UPDATE person SET born = ? where id = ?", (self.born, data[0]))
             if self.died is not None:
-                cur.execute("UPDATE person SET died = ?", (self.died,))
+                cur.execute("UPDATE person SET died = ? where id = ?", (self.died, data[0]))
             
             return data[0]
 

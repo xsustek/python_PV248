@@ -13,7 +13,7 @@ if os.path.isfile(output):
 
 con = sqlite3.connect(str(output))
 cur = con.cursor()
-cur.executescript(open("scorelib.sql").read())
+cur.executescript(open("03-sql/scorelib.sql").read())
 
 
 prints = load(input)
