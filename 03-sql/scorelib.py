@@ -85,7 +85,7 @@ class Edition:
         if s is not None:
             m = s.group(1)
             if m is not None:
-                return list(map(lambda v: Person(v), m.split(";")))
+                return list(map(lambda v: Person(v), m.split(",")))
 
     def load_name(self, data):
         return parse(data, r"Edition: (.*)")
