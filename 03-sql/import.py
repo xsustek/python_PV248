@@ -4,6 +4,7 @@ import sys
 import os   
 from scorelib import load
 
+
 input = sys.argv[1]
 output = sys.argv[2]
 
