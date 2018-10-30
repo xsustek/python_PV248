@@ -59,6 +59,10 @@ def slice_arr(arr, min, max):
         res.append(a[min:max + 1])
     return res
 
+def print_eqs(eqs):
+    for eq in eqs:
+        print(eq.to_string())
+
 
 eqs = list(map(line_into_list, f))
 
@@ -79,18 +83,14 @@ aug_rank = linalg.matrix_rank(column_stack((narr, nvals)))
 coef_rank = linalg.matrix_rank(narr)
 
 if coef_rank < aug_rank:
-    for eq in eqs:
-        print(eq.to_string())
+    print_eqs(eqs)
     print("no solution")
 elif coef_rank == aug_rank and coef_rank < w.__len__():
-    for eq in eqs:
-        print(eq.to_string())
+    print_eqs(eqs)
     print("solution space dimension:", w.__len__() - coef_rank)
 else:
+    print_eqs(eqs)
     res = linalg.solve(narr, nvals)
-    for eq in eqs:
-        print(eq.to_string())
-
     solution = ""
     for i, e in enumerate(nditer(res.T)):
         keys = list(eqs[0].left.keys())
