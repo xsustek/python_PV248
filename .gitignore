@@ -106,3 +106,5 @@ venv.bak/
 .vscode/**
 
 *.dat
+05-linalg/input.txt
+04-json/out.json

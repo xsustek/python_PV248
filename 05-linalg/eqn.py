@@ -4,6 +4,7 @@ import string
 from numpy import linalg
 from numpy import array
 from numpy import nditer
+from numpy import column_stack
 
 class Eq:
     def __init__(self, left, right, eq):
@@ -13,6 +14,9 @@ class Eq:
 
     def to_string(self):
         return self.eq
+    
+    def aug(self):
+        return self.left.append(self.right)
 
 
 input = sys.argv[1]
@@ -41,10 +45,18 @@ def find_end(arrs):
                 lens.append(i)
     return max(lens)
 
-def slice_arr(arr, max):
+def find_start(arrs):
+    lens = []
+    for arr in arrs:
+        for i in range(0, arr.__len__() - 1):
+            if arr[i] != 0:
+                lens.append(i)
+    return min(lens)
+
+def slice_arr(arr, min, max):
     res = []
     for a in arr:
-        res.append(a[:max + 1])
+        res.append(a[min:max + 1])
     return res
 
 
@@ -56,22 +68,33 @@ for i in eqs:
     vals.append(i.right)
     arr.append(list(i.left.values()))
 
-m = find_end(arr)
-w = slice_arr(arr, m)
+min = find_start(arr)
+max = find_end(arr)
+w = slice_arr(arr, min, max)
 
 narr = array(w)
 nvals = array(vals)
 
-res = linalg.solve(narr, nvals)
+aug_rank = linalg.matrix_rank(column_stack((narr, nvals)))
+coef_rank = linalg.matrix_rank(narr)
 
-for eq in eqs:
-    print(eq.to_string())
+if coef_rank < aug_rank:
+    for eq in eqs:
+        print(eq.to_string())
+    print("no solution")
+elif coef_rank == aug_rank and coef_rank < w.__len__():
+    for eq in eqs:
+        print(eq.to_string())
+    print("solution space dimension:", w.__len__() - coef_rank)
+else:
+    res = linalg.solve(narr, nvals)
+    for eq in eqs:
+        print(eq.to_string())
+
+    solution = ""
+    for i, e in enumerate(nditer(res.T)):
+        keys = list(eqs[0].left.keys())
+        solution += str(keys[i]) + " = " + str(e) + ", "
 
 
-solution = ""
-for i, e in enumerate(nditer(res.T)):
-    keys = list(eqs[0].left.keys())
-    solution += str(keys[i]) + " = " + str(e) + ", "
-
-
-print("solution: " + solution.strip(", "))
+    print("solution: " + solution.strip(", "))
