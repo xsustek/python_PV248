@@ -92,19 +92,20 @@ nvals = array(vals)
 aug_rank = linalg.matrix_rank(column_stack((narr, nvals)))
 coef_rank = linalg.matrix_rank(narr)
 
+num_of_var = key_set.__len__()
+
 if coef_rank < aug_rank:
     print_eqs(eqs)
     print("no solution")
-elif coef_rank == aug_rank and coef_rank < arr.__len__():
-    print_eqs(eqs)
-    print("solution space dimension:", arr.__len__() - coef_rank)
-else:
+elif coef_rank == aug_rank and coef_rank == num_of_var:
     print_eqs(eqs)
     res = linalg.solve(narr, nvals)
     solution = ""
     for i, e in enumerate(nditer(res.T)):
         keys = list(eqs[i].left.keys())
         solution += str(key_set[i]) + " = " + str(e) + ", "
-
-
+    
     print("solution: " + solution.strip(", "))
+else:
+    print_eqs(eqs)
+    print("solution space dimension:", num_of_var - coef_rank)
