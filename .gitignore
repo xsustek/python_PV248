@@ -108,3 +108,5 @@ venv.bak/
 *.dat
 05-linalg/input.txt
 04-json/out.json
+06-fft/Stereo_1000_80.wav
+06-fft/Mono_random.wav
