@@ -26,8 +26,10 @@ f = open(input)
 
 def line_into_list(line):
     line = line.strip()
+    if "=" not in line:
+        return
     splits = str(line).split(" = ")
-    m = sorted(re.findall(r"[+-]? ?\d?[a-z]", splits[0]), key=lambda f: f[f.__len__() - 1])
+    m = sorted(re.findall(r"[+-]? ?\d*[a-z]", splits[0]), key=lambda f: f[f.__len__() - 1])
 
     dic = {}
     for c in m:
@@ -64,7 +66,7 @@ def print_eqs(eqs):
         print(eq.to_string())
 
 
-eqs = list(map(line_into_list, f))
+eqs = list(filter(lambda e: e is not None, map(line_into_list, f)))
 
 arr = []
 vals = []
