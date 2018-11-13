@@ -29,7 +29,7 @@ def line_into_list(line):
     if "=" not in line:
         return
     splits = str(line).split(" = ")
-    m = sorted(re.findall(r"[+-]? ?\d*[a-z]", splits[0]), key=lambda f: f[f.__len__() - 1])
+    m = sorted(re.findall(r"[+-]? *\d*[a-z]", splits[0]), key=lambda f: f[f.__len__() - 1])
 
     dic = {}
     for c in m:
