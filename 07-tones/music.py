@@ -54,6 +54,13 @@ def to_upper(note):
     return note[0].upper() + note[1:]
 
 
+def chunk_to_str(chunk):
+    if chunk.__len__() == 0:
+        return "no peaks"
+    else:
+        return " ".join(chunk)
+
+
 def f_to_pitch(freq, base):
     pitch = 9 + 12 * log2(freq / base)
     diff = octav_diff(pitch)
@@ -84,18 +91,19 @@ fr = audio.getframerate()
 
 a_arr = [audio_arr[x:x+fr] for x in range(0, len(audio_arr), fr // 10)]
 a_filter = filter(lambda a: len(a) == fr, a_arr)
-a_map = list(map(lambda c: list(find_peak(fft(c), fr)), a_filter))
+a_map = map(lambda c: list(find_peak(fft(c), fr)), a_filter)
 
 chunks = list(map(lambda e: [f_to_pitch(x, base_freq) for x in sorted(e)], filter(lambda q: q is not None, a_map)))
 
-tmp = None
+tmp = chunks[0]
 start_time = 0.0
-time = 0.0
-for i, c in enumerate(chunks):
-    time = round(time + 1 / 10, 1)
-    if tmp == c and i != chunks.__len__() - 1:
-        continue
-    tmp = c
-    arr_print = ""
-    print(str(start_time) + "-" + str(time) + " " + " ".join(c))
-    start_time = time
+
+i = 0
+while i < chunks.__len__() - 1:
+    if chunks[i] == tmp:
+        i += 1
+    else:
+        tmp = chunks[i]
+        print(str(start_time) + "-" + str(i / 10) + " " + chunk_to_str(chunks[i - 1]))
+        start_time = i / 10
+print(str(start_time) + "-" + str(i / 10) + " " + chunk_to_str(chunks[i - 1]))
