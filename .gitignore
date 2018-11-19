@@ -109,3 +109,4 @@ venv.bak/
 05-linalg/input.txt
 04-json/out.json
 *.wav
+08-stat/points.csv
