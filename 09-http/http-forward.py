@@ -45,20 +45,22 @@ async def handlePost(request):
             url = js["url"]
             method = js["type"] if js.__contains__("type") else "GET"
             timeout = js["timeout"] if js.__contains__("timeout") else 1
-            try:
-                async with session.request(method, url, headers=js["headers"], timeout=timeout) as resp:
-                    res = {
-                    "code": resp.status,
-                    "headers": dict(resp.headers)
-                }
-                    content = await resp.text()
-                    if is_json(content):
-                        res["json"] = json.loads(content)
-                    else:
-                        res["content"] = str(content)
-                    return web.Response(text=json.dumps(res), content_type=resp.content_type)
-            except asyncio.TimeoutError:
-                return web.Response(text="timeout")
+            if method.upper() == "GET" or (method.upper() == "POST" and js.__contains__("content")): 
+                content = js["content"] if js.__contains__("content") else {}
+                try:
+                    async with session.request(method, url, headers=js["headers"], timeout=timeout, data=content) as resp:
+                        res = {
+                        "code": resp.status,
+                        "headers": dict(resp.headers)
+                    }
+                        content = await resp.text()
+                        if is_json(content):
+                            res["json"] = json.loads(content)
+                        else:
+                            res["content"] = str(content)
+                        return web.Response(text=json.dumps(res), content_type=resp.content_type)
+                except asyncio.TimeoutError:
+                    return web.Response(text="timeout")
     return web.Response(text=json.dumps({"code":"invalid json"}))
 
 app = web.Application()
