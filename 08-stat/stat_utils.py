@@ -32,8 +32,7 @@ def date_dic(dic):
         for ik, ie in e.items():
             if not res.__contains__(ik):
                 res[ik] = []
-            for iie in ie:
-                res[ik].append(iie)
+            res[ik].append(sum(ie))
     return res
 
 def exercises_dic(dic):
@@ -42,7 +41,7 @@ def exercises_dic(dic):
         for ik, ie in e.items():
             if not res.__contains__(ik):
                 res[ik] = []
-            res[ik].append(max(ie))
+            res[ik].append(sum(ie))
     return res
 
 def exercises_dic_stud(dic):
@@ -50,5 +49,5 @@ def exercises_dic_stud(dic):
     for k, e in dic.items():
             if not res.__contains__(k):
                 res[k] = []
-            res[k].append(max(e))
+            res[k].append(sum(e))
     return res

@@ -2,17 +2,15 @@ import sys
 import numpy as np
 import json
 from stat_utils import *
+import collections
 
 file = sys.argv[1]
 mode = sys.argv[2]
 
 dic = load(file, mode)
 
-if mode == "exercises":
-    data = exercises_dic(dic)
-else:
-    data = date_dic(dic)
-
+data = date_dic(dic)
+data = collections.OrderedDict(sorted(data.items(), key=lambda e: e[0]))
 
 res = {}
 for k, e in data.items():

@@ -59,8 +59,8 @@ if id == "average":
         "total": np.sum(arr),
         "passed": np.count_nonzero(arr > 0),
         "regression slope": slope,
-        "date 16": prediction(16, slope).strftime("%Y-%m-%d"),
-        "date 20": prediction(20, slope).strftime("%Y-%m-%d")
+        "date 16": "inf" if slope == 0 else prediction(16, slope).strftime("%Y-%m-%d"),
+        "date 20": "inf" if slope == 0 else prediction(20, slope).strftime("%Y-%m-%d")
     }
 else:
     dic_date = load(file, "dates")
@@ -77,9 +77,9 @@ else:
             "total": np.sum(arr),
             "passed": np.count_nonzero(arr > 0),
             "regression slope": slope,
-            "date 16": prediction(16, slope).strftime("%Y-%m-%d"),
-            "date 20": prediction(20, slope).strftime("%Y-%m-%d")
+            "date 16": "inf" if slope == 0 else prediction(16, slope).strftime("%Y-%m-%d"),
+            "date 20": "inf" if slope == 0 else prediction(20, slope).strftime("%Y-%m-%d")
         }
 
-
-print(json.dumps(res, indent=4, ensure_ascii=False))
+if res:
+    print(json.dumps(res, indent=4, ensure_ascii=False))
