@@ -8,8 +8,8 @@ import json
 
 def is_json(myjson):
     try:
-        json_object = json.loads(myjson)
-    except ValueError as e:
+        json.loads(myjson)
+    except ValueError:
         return False
     return True
 
@@ -47,8 +47,9 @@ async def handlePost(request):
             timeout = js["timeout"] if js.__contains__("timeout") else 1
             if method.upper() == "GET" or (method.upper() == "POST" and js.__contains__("content")): 
                 content = js["content"] if js.__contains__("content") else {}
+                headers = js["headers"] if js.__contains__("headers") else {}
                 try:
-                    async with session.request(method, url, headers=js["headers"], timeout=timeout, data=content) as resp:
+                    async with session.request(method, url, headers=headers, timeout=timeout, data=content) as resp:
                         res = {
                         "code": resp.status,
                         "headers": dict(resp.headers)
@@ -67,6 +68,6 @@ app = web.Application()
 app.add_routes([web.get('/{param:.*}', handleGet),
                 web.post('/{params:.*}', handlePost)])
 
-web.run_app(app, port=port)
+web.run_app(app, port=int(port))
 
 session.close()
