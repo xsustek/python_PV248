@@ -14,7 +14,7 @@ def is_json(myjson):
     return True
 
 
-port = sys.argv[1]
+port = int(sys.argv[1])
 host = "http://" + sys.argv[2]
 
 session = aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=1))
@@ -68,6 +68,6 @@ app = web.Application()
 app.add_routes([web.get('/{param:.*}', handleGet),
                 web.post('/{params:.*}', handlePost)])
 
-web.run_app(app, port=int(port))
+web.run_app(app, port=port)
 
 session.close()
