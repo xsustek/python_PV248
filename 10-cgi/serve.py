@@ -11,8 +11,8 @@ dir = str(sys.argv[2])
 
 
 def set_variables(request, script_name):
-    for header in request.headers.items():
-        os.putenv("HTTP_" + header[0].upper().replace('-', '_'), header[1])
+    for header_key, header_val in request.headers.items():
+        os.putenv("HTTP_" + header_key.upper().replace('-', '_'), header_val)
 
     os.putenv("CONTENT_TYPE",
               request.content_type if request.content_type is not None else "")
@@ -27,7 +27,7 @@ def set_variables(request, script_name):
     os.putenv('SERVER_NAME', '127.0.0.1')
     os.putenv('SERVER_PORT', str(port))
     os.putenv('SERVER_PROTOCOL', 'HTTP/1.1')
-    os.putenv('SERVER_SOFTWARE', 'PV248 server')
+    os.putenv('SERVER_SOFTWARE', 'PV248/1')
     os.putenv('REMOTE_HOST', 'NULL')
 
 
