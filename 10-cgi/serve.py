@@ -53,7 +53,8 @@ async def handle_request(request):
 
     set_variables(request, file_name)
     cgi_res = await start_cgi(file_path, content)
-    return web.Response(text=cgi_res.decode('utf-8'))
+    
+    return web.Response(text=cgi_res.decode('utf-8').split("\n\n")[1])
 
 
 if sys.platform == "win32":
