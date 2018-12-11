@@ -9,50 +9,59 @@ import os
 port = int(sys.argv[1])
 dir = str(sys.argv[2])
 
-loop = asyncio.get_event_loop()
-session = aiohttp.ClientSession(
-    loop=loop, timeout=aiohttp.ClientTimeout(total=1))
+
+def set_variables(request, script_name):
+    for header in request.headers.items():
+        os.putenv("HTTP_" + header[0].upper().replace('-', '_'), header[1])
+
+    os.putenv("CONTENT_TYPE",
+              request.content_type if request.content_type is not None else "")
+    os.putenv("CONTENT_LENGTH", str(request.content_length)
+              if request.content_length is not None else "")
+    os.putenv('GATEWAY_INTERFACE', 'CGI/1.1')
+    os.putenv('PATH_INFO', request.match_info['params'])
+    os.putenv('QUERY_STRING', request.query_string)
+    os.putenv('REMOTE_ADDR', '127.0.0.1')
+    os.putenv('REQUEST_METHOD', request.method)
+    os.putenv('SCRIPT_NAME', script_name)
+    os.putenv('SERVER_NAME', '127.0.0.1')
+    os.putenv('SERVER_PORT', str(port))
+    os.putenv('SERVER_PROTOCOL', 'HTTP/1.1')
+    os.putenv('SERVER_SOFTWARE', 'PV248 server')
+    os.putenv('REMOTE_HOST', 'NULL')
 
 
-def read_file(file_name):
-    with open(file_name, mode="r") as f:
-        return f.read()
+async def start_cgi(file_path, program_data):
+    process = await asyncio.create_subprocess_shell(file_path, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE)
+    return (await process.communicate(program_data if program_data is not None else b''))[0]
 
 
-async def handleGet(request):
-    file_name = request.match_info['params']  # Could be a HUGE file
-    headers = {
-        "Content-disposition": "attachment; filename={file_name}".format(file_name=file_name)
-    }
+async def handle_request(request):
+    file_name = request.match_info['path'] + '.cgi'
 
     file_path = os.path.join(dir, file_name)
 
     if not os.path.exists(file_path):
         return web.Response(
-            body='File <{file_name}> does not exist'.format(
-                file_name=file_name),
+            body='404: Not Found',
             status=404
         )
 
-    if not os.path.isfile(file_path):
-        return web.Response(status=403)
+    content = None
+    if request.method == 'POST':
+        content = await request.read()
 
-    return web.Response(
-        body=read_file(file_path),
-        headers=headers
-    )
+    set_variables(request, file_name)
+    cgi_res = await start_cgi(file_path, content)
+    return web.Response(text=cgi_res.decode('utf-8'))
 
 
-async def handlePost(request):
-    pass
-
+if sys.platform == "win32":
+    asyncio.set_event_loop(asyncio.ProactorEventLoop())
 
 app = web.Application()
-app.add_routes([web.get('/{params:.*}', handleGet),
-                web.post('/{params:.*}', handlePost)])
+app.add_routes([web.get('/{path:.*}.cgi{params:.*}', handle_request),
+                web.post('/{path:.*}.cgi{params:.*}', handle_request),
+                web.static('/', path=dir)])
 
 web.run_app(app, port=int(port))
-
-session.close()
-
-loop.close()

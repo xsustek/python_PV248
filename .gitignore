@@ -110,3 +110,4 @@ venv.bak/
 04-json/out.json
 *.wav
 08-stat/points.csv
+10-cgi/test.cgi
