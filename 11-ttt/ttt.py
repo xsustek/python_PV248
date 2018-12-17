@@ -8,7 +8,7 @@ import os
 
 
 class Games:
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         self.games = {}
         self.current_id = 1
 
@@ -24,7 +24,7 @@ class Games:
         return game
 
     def game_list(self):
-        return self.games.values()
+        return [v for v in self.games.values() if v.ready]
 
 
 class Game:
@@ -35,6 +35,7 @@ class Game:
         self.winner = 0
         self.over = False
         self.next = 1
+        self.ready = True
 
     def play(self, player, x, y):
         if player != self.next:
@@ -43,6 +44,7 @@ class Game:
             return {"status": "bad", "message": "game is over"}
         if self.board[x][y] != 0:
             return {"status": "bad", "message": "field is alredy filled"}
+        self.ready = False
         self.board[x][y] = player
         self.set_next()
         self.check_game_status()
@@ -73,10 +75,9 @@ class Game:
             self.winner = self.board[0][2]
             self.over = True
             return
-        if all(0 != item for item in row for row in self.board):
+        if all((0 != item for item in row) for row in self.board):
             self.over = True
             return
-
 
     def result(self):
         if self.over:
@@ -102,6 +103,7 @@ async def play(params: web.Request):
     y = int(params.rel_url.query["y"])
     res = games.games[game].play(player, x, y)
     return web.json_response(res)
+
 
 async def list(params):
     res = [{"id": game.id, "name": game.name} for game in games.game_list()]
