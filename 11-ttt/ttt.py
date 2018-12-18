@@ -75,7 +75,7 @@ class Game:
             self.winner = self.board[0][2]
             self.over = True
             return
-        if all((0 != item for item in row) for row in self.board):
+        if all(all(0 != item for item in row) for row in self.board):
             self.over = True
             return
 
