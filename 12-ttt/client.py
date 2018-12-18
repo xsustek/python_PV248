@@ -70,10 +70,14 @@ def RepresentsInt(s):
     except ValueError:
         return False
 
+def print_games(games):
+    for game in games:
+        print(game["id"], game["name"])
+
 async def game(session):
     while True:
         games = await list(session)
-        print(games)
+        print_games(games)
         u_input = input()
         if u_input.startswith("new"):
             res = await new(session, "" if " " not in u_input else u_input.split(" ")[-1])
